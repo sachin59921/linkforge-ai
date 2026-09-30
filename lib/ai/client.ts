@@ -1,8 +1,7 @@
 "use server";
 
-const OPENAI_API_URL = "https://api.openai.com/v1/responses";
-
-const DEFAULT_MODEL = "gpt-5.6-luna";
+const DEFAULT_MODEL = "gemini-3.8-flash";
+const MAX_RETRIES = 3;
 
 type GenerateTextOptions = {
   system?: string;
@@ -11,8 +10,11 @@ type GenerateTextOptions = {
   maxOutputTokens?: number;
 };
 
-type OpenAIResponse = {
-  output?: Array<{
+type GeminiInteractionResponse = {
+  id?: string;
+  status?: string;
+  output_text?: string;
+  steps?: Array<{
     type?: string;
     content?: Array<{
       type?: string;
@@ -30,64 +32,112 @@ export async function generateText({
   model = DEFAULT_MODEL,
   maxOutputTokens = 1200,
 }: GenerateTextOptions): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     throw new Error(
-      "OPENAI_API_KEY is not configured. Add it to your local environment before using the AI service.",
+      "GEMINI_API_KEY is not configured. Add it to your local environment.",
     );
   }
 
   const input = system
-    ? [
-        {
-          role: "system",
-          content: system,
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ]
+    ? `SYSTEM INSTRUCTIONS:
+${system}
+
+USER REQUEST:
+${prompt}`
     : prompt;
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model,
-      input,
-      max_output_tokens: maxOutputTokens,
-    }),
-  });
+  let lastError = "Gemini request failed.";
 
-  const data = (await response.json()) as OpenAIResponse;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await fetch(
+        "https://generativelanguage.googleapis.com/v1beta/interactions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey,
+          },
+          body: JSON.stringify({
+            model,
+            input,
+            generation_config: {
+              max_output_tokens: maxOutputTokens,
+              temperature: 0.7,
+            },
+          }),
+        },
+      );
 
-  if (!response.ok) {
-    throw new Error(
-      data.error?.message ||
-        `OpenAI request failed with status ${response.status}.`,
-    );
+      const data =
+        (await response.json()) as GeminiInteractionResponse;
+
+      if (response.ok) {
+        const text = extractOutputText(data);
+
+        if (!text) {
+          throw new Error("Gemini returned an empty response.");
+        }
+
+        return text;
+      }
+
+      lastError =
+        data.error?.message ||
+        `Gemini request failed with status ${response.status}.`;
+
+      const isRetryable =
+        response.status === 429 ||
+        response.status === 500 ||
+        response.status === 502 ||
+        response.status === 503 ||
+        response.status === 504;
+
+      if (!isRetryable || attempt === MAX_RETRIES) {
+        throw new Error(lastError);
+      }
+
+      const delay = 1500 * 2 ** attempt;
+
+      await sleep(delay);
+    } catch (error) {
+      if (attempt === MAX_RETRIES) {
+        throw error;
+      }
+
+      const message =
+        error instanceof Error ? error.message : "Unknown Gemini error.";
+
+      lastError = message;
+
+      await sleep(1500 * 2 ** attempt);
+    }
   }
 
-  const text = extractOutputText(data);
-
-  if (!text) {
-    throw new Error("OpenAI returned an empty response.");
-  }
-
-  return text;
+  throw new Error(lastError);
 }
 
-function extractOutputText(response: OpenAIResponse): string {
+function extractOutputText(
+  response: GeminiInteractionResponse,
+): string {
+  if (response.output_text) {
+    return response.output_text.trim();
+  }
+
   return (
-    response.output
-      ?.flatMap((item) => item.content ?? [])
-      .filter((content) => content.type === "output_text")
+    response.steps
+      ?.filter((step) => step.type === "model_output")
+      .flatMap((step) => step.content ?? [])
+      .filter((content) => content.type === "text")
       .map((content) => content.text ?? "")
       .join("") ?? ""
   ).trim();
+}
+
+function sleep(milliseconds: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }

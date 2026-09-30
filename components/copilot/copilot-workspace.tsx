@@ -7,8 +7,8 @@ import {
   Copy,
   FileText,
   Lightbulb,
+  Loader2,
   Plus,
-  Send,
   Sparkles,
   UserRound,
   WandSparkles,
@@ -56,12 +56,14 @@ const initialMessages: Message[] = [
 export function CopilotWorkspace() {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState<number | null>(null);
 
-  function sendMessage(message?: string) {
+  async function sendMessage(message?: string) {
     const content = (message ?? input).trim();
 
-    if (!content) return;
+    if (!content || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now(),
@@ -69,21 +71,58 @@ export function CopilotWorkspace() {
       content,
     };
 
-    const response = createLocalResponse(content);
-
-    const assistantMessage: Message = {
-      id: Date.now() + 1,
-      role: "assistant",
-      content: response,
-    };
-
-    setMessages((current) => [
-      ...current,
-      userMessage,
-      assistantMessage,
-    ]);
-
+    setMessages((current) => [...current, userMessage]);
     setInput("");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: content,
+          context: {},
+        }),
+      });
+
+      const data = (await response.json()) as {
+        success?: boolean;
+        response?: string;
+        error?: string;
+      };
+
+      if (!response.ok || !data.success || !data.response) {
+        throw new Error(
+          data.error || "Unable to get a response from Copilot.",
+        );
+      }
+
+      const assistantMessage: Message = {
+        id: Date.now() + 1,
+        role: "assistant",
+        content: data.response,
+      };
+
+      setMessages((current) => [...current, assistantMessage]);
+    } catch (requestError) {
+      const message =
+        requestError instanceof Error
+          ? requestError.message
+          : "Something went wrong while contacting Copilot.";
+
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  function startNewConversation() {
+    setMessages(initialMessages);
+    setInput("");
+    setError("");
   }
 
   async function copyMessage(id: number, content: string) {
@@ -101,12 +140,11 @@ export function CopilotWorkspace() {
 
   return (
     <div className="grid min-h-[680px] gap-5 lg:grid-cols-[250px_minmax(0,1fr)]">
-      {/* Conversations */}
       <aside className="flex flex-col rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 p-4">
           <button
             type="button"
-            onClick={() => setMessages(initialMessages)}
+            onClick={startNewConversation}
             className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-950 px-3 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800"
           >
             <Plus className="size-4" />
@@ -127,7 +165,7 @@ export function CopilotWorkspace() {
               New conversation
             </p>
             <p className="mt-1 text-xs text-violet-500">
-              Just now
+              Current session
             </p>
           </button>
         </div>
@@ -150,9 +188,7 @@ export function CopilotWorkspace() {
         </div>
       </aside>
 
-      {/* Chat */}
       <section className="flex min-h-[680px] min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-        {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
           <div className="flex items-center gap-3">
             <div className="flex size-9 items-center justify-center rounded-xl bg-violet-50">
@@ -167,14 +203,20 @@ export function CopilotWorkspace() {
             </div>
           </div>
 
-          <span className="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 sm:block">
-            Ready
+          <span
+            className={[
+              "hidden rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide sm:block",
+              isLoading
+                ? "bg-amber-50 text-amber-700"
+                : "bg-emerald-50 text-emerald-700",
+            ].join(" ")}
+          >
+            {isLoading ? "Thinking" : "Ready"}
           </span>
         </div>
 
-        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-5">
-          {messages.length === 1 && (
+          {messages.length === 1 && !isLoading && (
             <div className="mb-8">
               <div className="mx-auto max-w-2xl text-center">
                 <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-2xl bg-violet-50">
@@ -200,7 +242,8 @@ export function CopilotWorkspace() {
                       key={suggestion.title}
                       type="button"
                       onClick={() => sendMessage(suggestion.title)}
-                      className="group rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-violet-200 hover:bg-violet-50/40"
+                      disabled={isLoading}
+                      className="group rounded-xl border border-slate-200 bg-white p-4 text-left transition hover:border-violet-200 hover:bg-violet-50/40 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       <div className="flex items-start gap-3">
                         <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 transition group-hover:bg-violet-100">
@@ -283,20 +326,51 @@ export function CopilotWorkspace() {
                 )}
               </div>
             ))}
+
+            {isLoading && (
+              <div className="flex gap-3">
+                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-violet-50">
+                  <Sparkles className="size-4 text-violet-600" />
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 px-4 py-3">
+                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                    <Loader2 className="size-4 animate-spin" />
+                    Copilot is thinking...
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <p className="text-sm font-medium text-red-800">
+                  Copilot couldn&apos;t respond
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-red-600">
+                  {error}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setError("")}
+                  className="mt-2 text-xs font-medium text-red-700 underline underline-offset-2"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Context */}
         <div className="border-t border-slate-100 px-5 py-3">
           <div className="mx-auto flex max-w-3xl items-center gap-2 text-xs text-slate-400">
             <span className="size-1.5 rounded-full bg-emerald-500" />
-            <span>
-              Context: Profile, professional goals, and workspace
-            </span>
+            <span>Context-aware AI workspace</span>
           </div>
         </div>
 
-        {/* Composer */}
         <div className="border-t border-slate-200 p-4">
           <div className="mx-auto max-w-3xl">
             <div className="relative rounded-xl border border-slate-200 bg-white transition focus-within:border-violet-300 focus-within:ring-4 focus-within:ring-violet-50">
@@ -306,22 +380,27 @@ export function CopilotWorkspace() {
                 onKeyDown={(event) => {
                   if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
-                    sendMessage();
+                    void sendMessage();
                   }
                 }}
                 placeholder="Ask Copilot anything about your LinkedIn presence..."
                 rows={3}
-                className="w-full resize-none bg-transparent px-4 py-3 pr-14 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400"
+                disabled={isLoading}
+                className="w-full resize-none bg-transparent px-4 py-3 pr-14 text-sm leading-6 text-slate-900 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-60"
               />
 
               <button
                 type="button"
-                onClick={() => sendMessage()}
-                disabled={!input.trim()}
+                onClick={() => void sendMessage()}
+                disabled={!input.trim() || isLoading}
                 aria-label="Send message"
                 className="absolute bottom-3 right-3 flex size-9 items-center justify-center rounded-lg bg-violet-600 text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
               >
-                <ArrowUp className="size-4" />
+                {isLoading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ArrowUp className="size-4" />
+                )}
               </button>
             </div>
 
@@ -332,7 +411,7 @@ export function CopilotWorkspace() {
 
               <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
                 <Sparkles className="size-3" />
-                AI-assisted workspace
+                Server-side AI
               </div>
             </div>
           </div>
@@ -340,65 +419,4 @@ export function CopilotWorkspace() {
       </section>
     </div>
   );
-}
-
-function createLocalResponse(input: string) {
-  const normalized = input.toLowerCase();
-
-  if (normalized.includes("profile")) {
-    return `I'd start with your profile positioning.
-
-Based on the current LinkForge workspace, the first areas I'd review are:
-
-1. Headline — make your value proposition immediately clear.
-2. About — connect your experience with the audience you want to reach.
-3. Experience — emphasize outcomes and evidence instead of only responsibilities.
-4. Featured — use it to reinforce the professional story you want people to remember.
-
-The next step would be a full profile analysis once the AI backend is connected.`;
-  }
-
-  if (normalized.includes("post") || normalized.includes("content")) {
-    return `A useful content strategy should connect your expertise with the problems your audience cares about.
-
-You could start with three content directions:
-
-• Lessons from your professional experience
-• Practical frameworks or educational insights
-• Opinions backed by specific examples
-
-For each idea, aim for one clear takeaway rather than trying to cover everything in one post.
-
-The Post Forge can then turn the strongest idea into a structured draft.`;
-  }
-
-  if (normalized.includes("about")) {
-    return `A strong About section should answer three questions quickly:
-
-1. What do you do?
-2. What are you particularly good at?
-3. Who do you help or what problems do you solve?
-
-A useful structure is:
-
-Positioning → Experience → Expertise → Evidence → Direction.
-
-When the OpenAI layer is connected, Copilot will be able to use your actual profile context to rewrite the section rather than giving you generic copy.`;
-  }
-
-  if (normalized.includes("project")) {
-    return `Projects are valuable raw material for professional content.
-
-A simple Project Forge structure is:
-
-Problem → Your role → Approach → Solution → Outcome → Lesson.
-
-That structure can turn a project description into a credible professional story without making the result sound like generic AI-generated content.`;
-  }
-
-  return `That's a good area to explore.
-
-In LinkForge, Copilot will eventually use your profile, professional goals, brand context, projects, and previous posts to give you context-aware recommendations.
-
-For now, the Copilot prototype can help you explore the workflow. The OpenAI integration will be added later through the server-side AI layer.`;
 }
