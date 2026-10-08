@@ -19,54 +19,18 @@ import {
 } from "lucide-react";
 
 const workspaceItems = [
-  {
-    label: "Dashboard",
-    href: "/",
-    icon: LayoutDashboard,
-  },
-  {
-    label: "Profile",
-    href: "/dashboard/profile",
-    icon: UserRound,
-  },
-  {
-    label: "Posts",
-    href: "/dashboard/content/create",
-    icon: FileText,
-  },
-  {
-    label: "Projects",
-    href: "/dashboard/projects",
-    icon: FolderKanban,
-  },
-  {
-    label: "Calendar",
-    href: "/dashboard/content/calendar",
-    icon: CalendarDays,
-  },
-  {
-    label: "Brand",
-    href: "/dashboard/profile/analysis",
-    icon: WandSparkles,
-  },
-  {
-    label: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-  },
+  { label: "Dashboard", href: "/", icon: LayoutDashboard },
+  { label: "Profile", href: "/profile", icon: UserRound },
+  { label: "Posts", href: "/posts", icon: FileText },
+  { label: "Projects", href: "/projects", icon: FolderKanban },
+  { label: "Calendar", href: "/calendar", icon: CalendarDays },
+  { label: "Brand", href: "/profile/analysis", icon: WandSparkles },
+  { label: "Analytics", href: "/analytics", icon: BarChart3 },
 ];
 
 const accountItems = [
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-  },
-  {
-    label: "Help",
-    href: "/dashboard/help",
-    icon: HelpCircle,
-  },
+  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Help", href: "/help", icon: HelpCircle },
 ];
 
 export function Sidebar() {
