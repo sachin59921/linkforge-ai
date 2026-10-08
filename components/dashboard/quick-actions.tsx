@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Bot,
   BriefcaseBusiness,
@@ -9,18 +10,22 @@ import {
 const quickActions = [
   {
     label: "Improve Profile",
+    href: "/dashboard/profile/analysis",
     icon: UserRound,
   },
   {
     label: "Create Post",
+    href: "/dashboard/content/create",
     icon: FileText,
   },
   {
     label: "Forge Project",
+    href: "/dashboard/projects",
     icon: BriefcaseBusiness,
   },
   {
     label: "Ask Copilot",
+    href: "/copilot",
     icon: Bot,
   },
 ];
@@ -32,6 +37,7 @@ export function QuickActions() {
         <h2 className="text-lg font-semibold tracking-tight">
           Quick actions
         </h2>
+
         <p className="mt-1 text-sm text-slate-500">
           Make progress on your LinkedIn presence.
         </p>
@@ -42,9 +48,9 @@ export function QuickActions() {
           const Icon = action.icon;
 
           return (
-            <button
+            <Link
               key={action.label}
-              type="button"
+              href={action.href}
               className="group flex items-center justify-between rounded-xl border border-slate-200 bg-white p-4 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
             >
               <span className="flex items-center gap-3">
@@ -52,11 +58,13 @@ export function QuickActions() {
                   <Icon className="size-4 text-slate-600 group-hover:text-blue-600" />
                 </span>
 
-                <span className="text-sm font-medium">{action.label}</span>
+                <span className="text-sm font-medium">
+                  {action.label}
+                </span>
               </span>
 
-              <ChevronRight className="size-4 text-slate-400" />
-            </button>
+              <ChevronRight className="size-4 text-slate-400 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           );
         })}
       </div>
