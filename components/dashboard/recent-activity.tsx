@@ -1,4 +1,5 @@
-import { Sparkles } from "lucide-react";
+import Link from "next/link";
+import { FileText, Sparkles } from "lucide-react";
 
 export function RecentActivity() {
   return (
@@ -19,12 +20,31 @@ export function RecentActivity() {
             <Sparkles className="size-4 text-slate-500" />
           </div>
 
-          <p className="text-sm font-medium">Your workspace is ready</p>
-
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            Create your first post or improve your profile to start building
-            your Forge history.
+          <p className="text-sm font-medium">
+            Your workspace is ready
           </p>
+
+          <p className="mx-auto mt-1 max-w-sm text-xs leading-5 text-slate-500">
+            Create your first post or improve your profile to start
+            building your Forge history.
+          </p>
+
+          <div className="mt-4 flex items-center justify-center gap-2">
+            <Link
+              href="/dashboard/content/create"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-2 text-xs font-medium text-white transition hover:bg-slate-800"
+            >
+              <FileText className="size-3.5" />
+              Create post
+            </Link>
+
+            <Link
+              href="/dashboard/profile/analysis"
+              className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              Improve profile
+            </Link>
+          </div>
         </div>
       </div>
     </section>
