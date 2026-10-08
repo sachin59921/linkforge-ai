@@ -31,10 +31,7 @@ export function Header() {
           </span>
         </div>
 
-        <Link
-          href="/"
-          className="flex items-center gap-2 md:hidden"
-        >
+        <Link href="/" className="flex items-center gap-2 md:hidden">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
             <Sparkles className="h-4 w-4" />
           </div>
@@ -97,7 +94,7 @@ export function Header() {
 
         {/* User */}
         <Link
-          href="/dashboard/settings"
+          href="/settings"
           className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-slate-50"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white">
