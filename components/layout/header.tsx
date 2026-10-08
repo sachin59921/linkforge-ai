@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Bell,
   ChevronDown,
@@ -30,13 +31,18 @@ export function Header() {
           </span>
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <Link
+          href="/"
+          className="flex items-center gap-2 md:hidden"
+        >
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white">
             <Sparkles className="h-4 w-4" />
           </div>
 
-          <span className="text-sm font-bold text-slate-900">LinkForge</span>
-        </div>
+          <span className="text-sm font-bold text-slate-900">
+            LinkForge
+          </span>
+        </Link>
       </div>
 
       {/* Right */}
@@ -44,9 +50,11 @@ export function Header() {
         {/* Search */}
         <button
           type="button"
+          aria-label="Search LinkForge"
           className="hidden h-9 items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-400 transition-colors hover:border-slate-300 hover:bg-white hover:text-slate-600 sm:flex"
         >
           <Search className="h-4 w-4" />
+
           <span>Search</span>
 
           <span className="ml-4 flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-400">
@@ -65,13 +73,13 @@ export function Header() {
         </button>
 
         {/* AI Copilot */}
-        <button
-          type="button"
+        <Link
+          href="/copilot"
           className="hidden items-center gap-2 rounded-lg bg-violet-50 px-3 py-2 text-sm font-medium text-violet-700 transition-colors hover:bg-violet-100 md:flex"
         >
           <Sparkles className="h-4 w-4" />
           <span>Copilot</span>
-        </button>
+        </Link>
 
         {/* Notifications */}
         <button
@@ -88,8 +96,8 @@ export function Header() {
         <div className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
 
         {/* User */}
-        <button
-          type="button"
+        <Link
+          href="/dashboard/settings"
           className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-slate-50"
         >
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-white">
@@ -97,12 +105,17 @@ export function Header() {
           </div>
 
           <div className="hidden text-left sm:block">
-            <p className="text-xs font-semibold text-slate-900">John Doe</p>
-            <p className="text-[10px] text-slate-400">Free plan</p>
+            <p className="text-xs font-semibold text-slate-900">
+              John Doe
+            </p>
+
+            <p className="text-[10px] text-slate-400">
+              Free plan
+            </p>
           </div>
 
           <ChevronDown className="hidden h-4 w-4 text-slate-400 sm:block" />
-        </button>
+        </Link>
       </div>
     </header>
   );
