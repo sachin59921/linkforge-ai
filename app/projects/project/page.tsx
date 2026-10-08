@@ -8,7 +8,6 @@ import {
   CheckCircle2,
   ExternalLink,
   FileText,
-  Github,
   Lightbulb,
   Pencil,
   Sparkles,
@@ -410,7 +409,7 @@ export default function ProjectPage() {
                       className="flex w-full items-center justify-between rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                     >
                       <span className="flex items-center gap-2">
-                        <Github className="size-4 text-slate-400" />
+                        <span className="text-xs font-bold text-slate-500">GH</span>
                         GitHub repository
                       </span>
 
