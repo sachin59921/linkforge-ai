@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   ExternalLink,
   FolderKanban,
-  Github,
   Lightbulb,
   Plus,
   Sparkles,
