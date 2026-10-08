@@ -26,32 +26,32 @@ const workspaceItems = [
   },
   {
     label: "Profile",
-    href: "/profile",
+    href: "/dashboard/profile",
     icon: UserRound,
   },
   {
     label: "Posts",
-    href: "/posts",
+    href: "/dashboard/content/create",
     icon: FileText,
   },
   {
     label: "Projects",
-    href: "/projects",
+    href: "/dashboard/projects",
     icon: FolderKanban,
   },
   {
     label: "Calendar",
-    href: "/calendar",
+    href: "/dashboard/content/calendar",
     icon: CalendarDays,
   },
   {
     label: "Brand",
-    href: "/brand",
+    href: "/dashboard/profile/analysis",
     icon: WandSparkles,
   },
   {
     label: "Analytics",
-    href: "/analytics",
+    href: "/dashboard/analytics",
     icon: BarChart3,
   },
 ];
@@ -59,12 +59,12 @@ const workspaceItems = [
 const accountItems = [
   {
     label: "Settings",
-    href: "/settings",
+    href: "/dashboard/settings",
     icon: Settings,
   },
   {
     label: "Help",
-    href: "/help",
+    href: "/dashboard/help",
     icon: HelpCircle,
   },
 ];
@@ -93,6 +93,7 @@ export function Sidebar() {
             <p className="text-sm font-bold tracking-tight text-slate-900">
               LinkForge
             </p>
+
             <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
               AI Workspace
             </p>
@@ -137,6 +138,7 @@ export function Sidebar() {
           })}
         </NavSection>
 
+        {/* AI */}
         <NavSection title="AI">
           <Link
             href="/copilot"
@@ -164,6 +166,7 @@ export function Sidebar() {
           </Link>
         </NavSection>
 
+        {/* Account */}
         <NavSection title="Account">
           {accountItems.map((item) => {
             const Icon = item.icon;
@@ -181,6 +184,7 @@ export function Sidebar() {
                 ].join(" ")}
               >
                 <Icon className="h-[18px] w-[18px] text-slate-400 group-hover:text-slate-600" />
+
                 <span>{item.label}</span>
               </Link>
             );
@@ -199,7 +203,10 @@ export function Sidebar() {
             <p className="truncate text-sm font-semibold text-slate-900">
               John Doe
             </p>
-            <p className="truncate text-xs text-slate-500">Free plan</p>
+
+            <p className="truncate text-xs text-slate-500">
+              Free plan
+            </p>
           </div>
 
           <button
