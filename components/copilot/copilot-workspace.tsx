@@ -66,7 +66,7 @@ export function CopilotWorkspace() {
     if (!content || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: crypto.randomUUID(),
       role: "user",
       content,
     };
@@ -101,7 +101,7 @@ export function CopilotWorkspace() {
       }
 
       const assistantMessage: Message = {
-        id: Date.now() + 1,
+        id: crypto.randomUUID(),
         role: "assistant",
         content: data.response,
       };

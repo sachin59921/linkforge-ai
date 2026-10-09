@@ -196,7 +196,7 @@ export function PostForgeWorkspace() {
           <div className="mb-5">
             <h3 className="font-semibold text-slate-900">Post brief</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Start with the raw idea. You don't need to write the post
+              Start with the raw idea. You don&apos;t need to write the post
               yourself.
             </p>
           </div>
