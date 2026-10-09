@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 
 type Message = {
-  id: number;
+  id: string;
   role: "user" | "assistant";
   content: string;
 };
@@ -46,7 +46,7 @@ const suggestions = [
 
 const initialMessages: Message[] = [
   {
-    id: 1,
+    id: "1",
     role: "assistant",
     content:
       "Hi! I'm your LinkForge AI Copilot. I can help you improve your profile, create LinkedIn content, clarify your positioning, and decide what to work on next.",
@@ -58,7 +58,7 @@ export function CopilotWorkspace() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [copiedId, setCopiedId] = useState<number | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   async function sendMessage(message?: string) {
     const content = (message ?? input).trim();
@@ -125,7 +125,7 @@ export function CopilotWorkspace() {
     setError("");
   }
 
-  async function copyMessage(id: number, content: string) {
+  async function copyMessage(id: string, content: string) {
     try {
       await navigator.clipboard.writeText(content);
       setCopiedId(id);
