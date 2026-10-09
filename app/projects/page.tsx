@@ -16,8 +16,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
 
 const initialProjects = [
   {
@@ -167,10 +165,8 @@ export default function ProjectsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <Sidebar />
 
       <div className="lg:pl-64">
-        <Header />
 
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           {/* Breadcrumb */}

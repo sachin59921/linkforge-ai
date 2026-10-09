@@ -1,6 +1,4 @@
 import { BarChart3, ChevronRight } from "lucide-react";
-import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
 import { AIRecommendationCard } from "@/components/dashboard/ai-recommendation-card";
 import { ForgeScoreCard } from "@/components/dashboard/forge-score-card";
 import { QuickActions } from "@/components/dashboard/quick-actions";
@@ -10,10 +8,8 @@ import { RecentActivity } from "@/components/dashboard/recent-activity";
 export default function Home() {
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-950">
-      <Sidebar />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Header />
 
         <main className="flex-1">
           <section className="mx-auto w-full max-w-7xl p-5 sm:p-8">
