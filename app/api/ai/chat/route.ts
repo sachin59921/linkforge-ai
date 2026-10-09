@@ -1,52 +1,67 @@
+
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { askCopilot } from "@/lib/ai/copilot";
 
-const copilotRequestSchema = z.object({
-  message: z.string().trim().min(1).max(4000),
-  context: z
-    .object({
-      profile: z
-        .object({
-          name: z.string().optional(),
-          headline: z.string().optional(),
-          about: z.string().optional(),
-          jobTitle: z.string().optional(),
-          industry: z.string().optional(),
-          experienceLevel: z.string().optional(),
-          careerGoal: z.string().optional(),
-          targetAudience: z.string().optional(),
-          skills: z.array(z.string()).optional(),
-        })
-        .optional(),
+const copilotRequestSchema = z
+  .object({
+    message: z.string().trim().min(1).max(4000),
+    context: z
+      .object({
+        profile: z
+          .object({
+            name: z.string().max(200).optional(),
+            headline: z.string().max(500).optional(),
+            about: z.string().max(4000).optional(),
+            jobTitle: z.string().max(200).optional(),
+            industry: z.string().max(200).optional(),
+            experienceLevel: z.string().max(100).optional(),
+            careerGoal: z.string().max(1000).optional(),
+            targetAudience: z.string().max(1000).optional(),
+            skills: z.array(z.string().max(200)).max(100).optional(),
+          })
+          .optional(),
 
-      recentPosts: z.array(z.string()).max(20).optional(),
-      projects: z.array(z.string()).max(20).optional(),
+        recentPosts: z.array(z.string().max(5000)).max(20).optional(),
+        projects: z.array(z.string().max(2000)).max(20).optional(),
 
-      brand: z
-        .object({
-          positioning: z.string().optional(),
-          audience: z.string().optional(),
-          voice: z.string().optional(),
-          expertise: z.string().optional(),
-          topics: z.array(z.string()).optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-});
+        brand: z
+          .object({
+            positioning: z.string().max(1000).optional(),
+            audience: z.string().max(1000).optional(),
+            voice: z.string().max(500).optional(),
+            expertise: z.string().max(1000).optional(),
+            topics: z.array(z.string().max(200)).max(50).optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+  })
+  .strict();
 
 export async function POST(request: Request) {
   try {
-    const body: unknown = await request.json();
+    const contentLength = request.headers.get("content-length");
 
+    if (
+      contentLength &&
+      (!/^\d+$/.test(contentLength) ||
+        Number(contentLength) > 100_000)
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Request body is too large." },
+        { status: 413 },
+      );
+    }
+
+    const body: unknown = await request.json();
     const parsed = copilotRequestSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
         {
+          success: false,
           error: "Invalid Copilot request.",
-          details: parsed.error.flatten(),
         },
         { status: 400 },
       );
@@ -61,16 +76,13 @@ export async function POST(request: Request) {
       success: true,
       response: result,
     });
-  } catch (error) {
-    console.error("Copilot API error:", error);
+  } catch {
+    console.error("Copilot API request failed.");
 
     return NextResponse.json(
       {
         success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unable to process Copilot request.",
+        error: "Unable to process Copilot request. Please try again.",
       },
       { status: 500 },
     );
