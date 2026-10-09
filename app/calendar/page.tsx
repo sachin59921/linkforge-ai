@@ -15,7 +15,6 @@ import {
   Sparkles,
   Target,
   X,
-  Pencil,
   Trash2,
 } from "lucide-react";
 
