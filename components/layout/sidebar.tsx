@@ -47,10 +47,6 @@ export function Sidebar() {
   };
 
   useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
     if (!mobileOpen) return;
 
     const previousOverflow = document.body.style.overflow;
@@ -138,7 +134,7 @@ export function Sidebar() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <SidebarNavigation isActive={isActive} />
+          <SidebarNavigation isActive={isActive} onNavigate={() => setMobileOpen(false)} />
         </div>
 
         <SidebarUserCard />
@@ -181,9 +177,15 @@ function SidebarContent({
 
 function SidebarNavigation({
   isActive,
+  onNavigate,
 }: {
   isActive: (href: string) => boolean;
+  onNavigate?: () => void;
 }) {
+  const handleNavigate = () => {
+    onNavigate?.();
+  };
+
   return (
     <nav aria-label="Main navigation" className="px-3 py-5">
       <NavSection title="Workspace">
@@ -195,6 +197,7 @@ function SidebarNavigation({
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNavigate}
               aria-current={active ? "page" : undefined}
               className={[
                 "group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
@@ -223,6 +226,7 @@ function SidebarNavigation({
       <NavSection title="AI">
         <Link
           href="/copilot"
+          onClick={handleNavigate}
           aria-current={isActive("/copilot") ? "page" : undefined}
           className={[
             "group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
@@ -255,6 +259,7 @@ function SidebarNavigation({
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleNavigate}
               aria-current={active ? "page" : undefined}
               className={[
                 "group flex min-h-11 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
